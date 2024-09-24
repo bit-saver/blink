@@ -9,6 +9,11 @@ function componentToHex(c) {
 const files = fs.readdirSync('./').filter((f) => f.endsWith('.itermcolors'));
 
 async function convert(file) {
+  const jsFile = file.replace('.itermcolors', '.js');
+  if (fs.existsSync(jsFile)) {
+    console.log(`File exists: ${jsFile}`);
+    return;
+  }
   const raw = fs.readFileSync(file, 'utf8');
   const xml = await plist.parse(raw);
   /**
@@ -50,7 +55,6 @@ async function convert(file) {
   lines.push(`t.prefs_.set('cursor-color', '${rgb(xml['Cursor Color'])}');`);
   lines.push(`t.prefs_.set('foreground-color', '${rgb(xml['Foreground Color'])}');`);
   lines.push(`t.prefs_.set('background-color', '${rgb(xml['Background Color'])}');`);
-  const jsFile = file.replace('.itermcolors', '.js');
   fs.writeFileSync(jsFile, lines.join('\n'));
   console.log(`Converted: ${jsFile}`);
 }
