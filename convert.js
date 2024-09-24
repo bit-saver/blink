@@ -1,20 +1,26 @@
 import fs from 'fs';
 import plist from 'plist';
 
+const THEMES_DIR = './blink_themes';
+const COLORS_DIR = './itermcolors';
+
 function componentToHex(c) {
   const hex = c.toString(16)
   return hex.length === 1 ? `0${hex}` : hex
 }
 
-const files = fs.readdirSync('./').filter((f) => f.endsWith('.itermcolors'));
+const files = fs.readdirSync('./itermcolors').filter((f) => f.endsWith('.itermcolors'));
+
+const themeFile = (file) => `${THEMES_DIR}/${file}`;
+const colorFile = (file) => `${COLORS_DIR}/${file}`;
 
 async function convert(file) {
   const jsFile = file.replace('.itermcolors', '.js');
-  if (fs.existsSync(jsFile)) {
+  if (fs.existsSync(themeFile(jsFile))) {
     console.log(`File exists: ${jsFile}`);
     return;
   }
-  const raw = fs.readFileSync(file, 'utf8');
+  const raw = fs.readFileSync(colorFile(file), 'utf8');
   const xml = await plist.parse(raw);
   /**
    *   {{ Ansi_0_Color }} // black
@@ -55,7 +61,7 @@ async function convert(file) {
   lines.push(`t.prefs_.set('cursor-color', '${rgb(xml['Cursor Color'])}');`);
   lines.push(`t.prefs_.set('foreground-color', '${rgb(xml['Foreground Color'])}');`);
   lines.push(`t.prefs_.set('background-color', '${rgb(xml['Background Color'])}');`);
-  fs.writeFileSync(jsFile, lines.join('\n'));
+  fs.writeFileSync(themeFile(jsFile), lines.join('\n'));
   console.log(`Converted: ${jsFile}`);
 }
 
